@@ -1,5 +1,5 @@
 # 0x02. React props
-> In React, props (short for "properties") are a way to pass data from a parent component to a child component. Props are immutable, meaning they cannot be changed by the child component
+In React, props (short for "properties") are a way to pass data from a parent component to a child component. Props are immutable, meaning they cannot be changed by the child component
 
 ## Learning objectives
 1. How to create basic React components using functions
