@@ -1,51 +1,109 @@
-import { filterTypeSelected, getNotifications, getUnreadNotifications } from './notificationSelector';
-import { FETCH_NOTIFICATIONS_SUCCESS, MARK_AS_READ } from '../actions/notificationActionTypes';
-import { notificationsNormalizer } from '../schema/notifications';
-import { notificationReducer } from '../reducers/notificationReducer';
-import { expect as expectChai } from 'chai';
+import { Map, fromJS } from "immutable";
 
-var _ = require('lodash');
-const { Map, fromJS } = require('immutable');
+import {
+  filterTypeSelected,
+  getNotifications,
+  getUnreadNotifications,
+} from "./notificationSelector";
 
-describe('Test notificationSelector.js', () => {
-  const data = [
-    { id: 1, type: "default", value: "New course available" },
-    { id: 2, type: "urgent", value: "New resume available" },
-    { id: 3, type: "urgent", value: "New data available" }
-  ];
+import notificationReducer, {
+  initialNotificationState,
+} from "../reducers/notificationReducer";
 
-  const state = fromJS({
-    filter: "DEFAULT",
-    notifications: notificationsNormalizer([
-      { id: 1, isRead: false, type: "default", value: "New course available" },
-      { id: 2, isRead: false, type: "urgent", value: "New resume available" },
-      { id: 3, isRead: false, type: "urgent", value: "New data available" }
-    ]).notifications
+import notificationsNormalizer from "../schema/notifications";
+
+describe("Selectors tests", function () {
+  it("test that filterTypeSelected works as expected", function () {
+    const state = notificationReducer(undefined, {});
+
+    const selected = filterTypeSelected(state);
+
+    expect(selected).toEqual(initialNotificationState.filter);
   });
 
-  it('Test filterTypeSelected function', (done) => {
-    const result = filterTypeSelected(notificationReducer(undefined, {}));
-    expectChai(_.isEqual(result, 'DEFAULT')).to.equal(true);
-    done();
-  });
+  it("test that getNotifications returns a list of the message entities within the reducer", function () {
+    const initialState = {
+      filter: "DEFAULT",
+      notifications: [
+        {
+          id: 1,
+          isRead: false,
+          type: "default",
+          value: "New course available",
+        },
+        {
+          id: 2,
+          isRead: false,
+          type: "urgent",
+          value: "New resume available",
+        },
+        {
+          id: 3,
+          isRead: false,
+          type: "urgent",
+          value: "New data available",
+        },
+      ],
+    };
 
-  it('Test getNotifications function', (done) => {
-    const result = getNotifications(notificationReducer(undefined, { type: FETCH_NOTIFICATIONS_SUCCESS, data: data }));
-    const expected = notificationsNormalizer([
-      { id: 1, isRead: false, type: "default", value: "New course available" },
-      { id: 2, isRead: false, type: "urgent", value: "New resume available" },
-      { id: 3, isRead: false, type: "urgent", value: "New data available" }
-    ]);
-    expectChai(_.isEqual(result, expected.notifications)).to.equal(true);
-    done();
-  });
+    initialState.notifications = notificationsNormalizer(
+      initialState.notifications
+    ).notifications;
 
-  it('Test getUnreadNotifications function', (done) => {
-    const result = getUnreadNotifications(notificationReducer(state, { type: MARK_AS_READ, index: 2 }));
-    const expected = [
-      { id: 2, isRead: true, type: 'urgent', value: 'New resume available' }
+    const state = notificationReducer(fromJS(initialState), {});
+
+    const selected = getNotifications(state);
+
+    expect(state instanceof Map).toEqual(true);
+    expect(selected.toJS()).toEqual(
+      notificationsNormalizer(initialState.notifications).notifications
+    );
+  });
+  it("test that getUnreadNotifications return a list of the message entities within the reducer", function () {
+    const initialState = {
+      filter: "DEFAULT",
+      notifications: [
+        {
+          id: 1,
+          isRead: false,
+          type: "default",
+          value: "New course available",
+        },
+        {
+          id: 2,
+          isRead: false,
+          type: "urgent",
+          value: "New resume available",
+        },
+        {
+          id: 3,
+          isRead: true,
+          type: "urgent",
+          value: "New data available",
+        },
+      ],
+    };
+
+    const expectedResult = [
+      {
+        id: 3,
+        isRead: true,
+        type: "urgent",
+        value: "New data available",
+      },
     ];
-    expectChai(_.isEqual(result, expected)).to.equal(true);
-    done();
+
+    initialState.notifications = notificationsNormalizer(
+      initialState.notifications
+    ).notifications;
+
+    const state = notificationReducer(fromJS(initialState), {});
+
+    const selected = getUnreadNotifications(state);
+
+    expect(state instanceof Map).toEqual(true);
+    expect(selected.toJS()).toEqual(
+      notificationsNormalizer(expectedResult).notifications
+    );
   });
 });
