@@ -12,3 +12,6 @@
 ### Tasks
 0. Commence with class components
 > Converting App function into a React Class
+
+1. lifecycles
+> Adding lifecycle to a component
